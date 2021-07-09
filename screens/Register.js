@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, Modal, Alert, ActivityIndicator } from 'react-native';
 import { connect } from 'react-redux';
 import styles from '../assets/styles/styles';
 import colour from '../models/Colour';
 import DateTimePicker from 'react-native-date-picker';
 import FeatherIcon from 'react-native-vector-icons/Feather'
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import messaging from '@react-native-firebase/messaging';
 
 class Register extends Component {
   constructor () {
@@ -14,16 +17,100 @@ class Register extends Component {
       dateOfBirth: new Date(Date.now()),
       phoneNumber: '',
       address: '',
-      showDatePicker: false
+      showDatePicker: false,
+      loading: false
     }
   }
 
+  doProcessRegister = async () => {
+    const { phoneNumber, loading } = this.state;
+    this.setState({loading: !loading});
+    var phones = phoneNumber.replace(/0/, '+62');
+    try {
+      if (this.validation()) {
+        await firestore().collection('users').where('phoneNumber', '==', phones).get().then(async (checkUser) => {
+          if (!checkUser.empty) {
+            this.setState({loading: false});
+            Alert.alert('Information', 'You already have an account!');
+          } else {
+            this.doRegister(phones);
+          }
+        });
+      }
+    } catch (error) {
+      this.setState({loading: !false});
+      Alert.alert(error.code, error.message);
+      console.log(error.code, error.message);
+    }
+  }
+
+  doRegister = async (phones) => {
+    const { name, dateOfBirth, phoneNumber, address, loading } = this.state;
+    var uid = '';
+    try {
+      await auth().signInWithPhoneNumber(phones).then(async () => {
+        let token = await messaging().getToken();
+        const users = auth().currentUser;
+        if (users != null) {
+          uid = users.uid;
+          await firestore().collection('users').doc(uid).set({
+            name: name,
+            dateOfBirth: dateOfBirth.toLocaleDateString(),
+            phoneNumber: phones,
+            avatar: '',
+            address: address,
+            role: 'Employee',
+            token: token
+          });
+
+          await firestore().collection('users').doc(uid).get().then(user => {
+            const data = { id: user.id, ...user.data() };
+            this.props.signInUser(data);
+            this.props.navigation.replace('landing');
+          })
+        }
+        else {
+          Alert.alert('Information', 'Timeout');
+          this.setState({ loading: false });
+          return;
+        }
+      });
+      this.setState({loading: false});
+    } catch (error) {
+      Alert.alert(error.code, error.message);
+      console.log(error.code, error.message);
+      this.setState({loading: false});
+    }
+  }
+
+  validation() {
+    const { name, dateOfBirth, phoneNumber, address } = this.state;
+
+    if (name === '') {
+      Alert.alert("Warning", "Name must be fill!");
+      return false;
+    } else if (dateOfBirth === '') {
+      Alert.alert("Warning", "Date Of Birth must be fill!");
+      return false;
+    } else if (phoneNumber === '') {
+      Alert.alert("Warning", "Phone Number must be fill!");
+      return false;
+    } else if (dateOfBirth === '') {
+      Alert.alert("Warning", "Address must be fill!");
+      return false;
+    }
+
+    return true;
+  }
+
   render() {
-    const { name, dateOfBirth, phoneNumber, address, showDatePicker } = this.state;
+    const { name, dateOfBirth, phoneNumber, address, showDatePicker, loading } = this.state;
     return (
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <ScrollView scrollEnabled={true} style={{
-          flex: 1, ...styles.scrollInput}}>
+          flex: 1, ...styles.scrollInput
+        }}>
+
           <View style={styles.titleContainer}>
             <View style={{flexDirection: 'row', justifyContent: 'center'}}>
               <Text style={styles.titleText}>TO</Text>
@@ -51,7 +138,7 @@ class Register extends Component {
 
             {/* Button */}
             <Text style={styles.notice}>Auto Login To This App and Registered as Employee!</Text>
-            <TouchableOpacity activeOpacity={0.9} style={styles.button}>
+            <TouchableOpacity activeOpacity={0.9} style={styles.button} onPress={this.doProcessRegister}>
               <Text style={styles.buttonText}>REGISTER</Text>
             </TouchableOpacity>
 
@@ -62,6 +149,7 @@ class Register extends Component {
               </TouchableWithoutFeedback>
             </View>
           </View>
+
           <Modal statusBarTranslucent={true} transparent={true} animationType="slide" onRequestClose={() => this.setState({ showDatePicker: !showDatePicker })} visible={showDatePicker}>
             <View style={styles.modalDatePicker}>
               <TouchableOpacity style={styles.closeModal} onPress={() => this.setState({showDatePicker: false})}>
@@ -72,6 +160,13 @@ class Register extends Component {
               </View>
             </View>
           </Modal>
+
+          <Modal statusBarTranslucent={true} transparent={true} animationType="fade" onRequestClose={() => this.setState({ loading: !loading })} visible={loading}>
+            <View style={styles.modalDatePicker}>
+              <ActivityIndicator animating={true} color={colour.primary} size='large' />
+            </View>
+          </Modal>
+
         </ScrollView>
       </TouchableWithoutFeedback>
     );

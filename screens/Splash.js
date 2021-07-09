@@ -5,18 +5,25 @@ import styles from '../assets/styles/styles';
 import colour from '../models/Colour';
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import auth from '@react-native-firebase/auth'
+import firestore from '@react-native-firebase/firestore'
+import messaging from '@react-native-firebase/messaging';
+import { setDataUser } from '../config/redux/action';
 
 class Splash extends Component {
-  componentDidMount() {
-    setTimeout(async () => {
-      const user = await auth().currentUser;
-      console.log(user);
-      if (user) {
-        this.props.navigation.replace('landing');
-      } else {
-        this.props.navigation.replace('login');
-      }
-    }, 2000);
+  async componentDidMount() {
+    const user = auth().currentUser;
+    if (user) {
+      const token = await messaging().getToken();
+      console.log(token);
+      await firestore().collection('users').doc(user.uid).update({token: token});
+      await firestore().collection('users').doc(user.uid).get().then(userData => {
+        const data = { id: userData.id, ...userData.data() };
+        this.props.signInUser(data);
+      });
+      this.props.navigation.replace('landing');
+    } else {
+      this.props.navigation.replace('login');
+    }
   }
 
   render() {
@@ -37,7 +44,7 @@ const mapToState = state => ({
 });
 
 const mapToAction = dispatch => ({
-  signInUser: (data) => dispatch()
+  signInUser: (data) => dispatch(setDataUser(data))
 });
 
 export default connect(mapToState, mapToAction)(Splash);

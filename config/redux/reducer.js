@@ -1,18 +1,14 @@
 const initialState = {
-  users: {
-    uid: '',
-    name: '',
-    dateOfBirth: '',
-    phoneNumber: '',
-    avatar: '',
-    address: '',
-    role: '',
-    token: '',
-  },
+  users: {},
   todo: []
 }
 
 const reducer = (state = initialState, action) => {
+  switch (action.type) {
+    case 'SET_DATA_USER': {
+      return {...state, users: action.payload}
+    }
+  }
 
   return state;
 }

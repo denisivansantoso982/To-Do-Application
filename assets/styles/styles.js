@@ -146,7 +146,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around'
   },
   touchableContainer: {
-    borderRadius: 10,
     paddingHorizontal: 12,
     paddingTop: 10,
     width: '45%',
@@ -177,7 +176,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     fontSize: 16,
     color: colour.primary,
-    marginRight: 6
+    marginRight: 6,
+    marginBottom: 6
   },
   listOutline: {
     borderWidth: 1,

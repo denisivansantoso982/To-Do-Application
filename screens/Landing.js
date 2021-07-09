@@ -4,6 +4,8 @@ import styles from '../assets/styles/styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import colour from '../models/Colour';
 import tempData from '../models/tempData';
+import auth from '@react-native-firebase/auth';
+import store from '../config/redux/store';
 
 class Landing extends Component {
   constructor () {
@@ -17,7 +19,18 @@ class Landing extends Component {
     this.props.navigation.navigate('task', {priority: navigate});
   }
 
+  doSignOut() {
+    try {
+      // auth().currentUser.delete();
+      auth().signOut().then(() => this.props.navigation.replace('login'));
+    } catch {
+      console.log('catch');
+      this.props.navigation.replace('login');
+    }
+  }
+
   render() {
+    console.log(store.getState().users);
     const { photo } = this.state;
     var urgent = tempData.filter(item => item.priority == 'Urgent').length.toString();
     var high = tempData.filter(item => item.priority == 'High').length.toString();
