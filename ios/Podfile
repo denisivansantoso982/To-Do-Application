@@ -18,6 +18,8 @@ target 'Todo_Application' do
 
   pod 'react-native-date-picker', :path => '../node_modules/react-native-date-picker'
 
+  pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
+
   target 'Todo_ApplicationTests' do
     inherit! :complete
     # Pods for testing

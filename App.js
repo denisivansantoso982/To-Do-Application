@@ -39,7 +39,7 @@ class App extends React.Component {
 
       messaging().onMessage(async remoteMessage => {
         console.log(remoteMessage);
-        ToastAndroid.show('New task for you!', ToastAndroid.SHORT);
+        ToastAndroid.show('New task for you!', ToastAndroid.LONG);
       });
 
       messaging().onNotificationOpenedApp(async remoteMessage => {

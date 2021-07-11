@@ -10,20 +10,20 @@ import messaging from '@react-native-firebase/messaging';
 import { setDataUser } from '../config/redux/action';
 
 class Splash extends Component {
-  async componentDidMount() {
-    const user = auth().currentUser;
-    if (user) {
-      const token = await messaging().getToken();
-      console.log(token);
-      await firestore().collection('users').doc(user.uid).update({token: token});
-      await firestore().collection('users').doc(user.uid).get().then(userData => {
-        const data = { id: userData.id, ...userData.data() };
-        this.props.signInUser(data);
-      });
-      this.props.navigation.replace('landing');
-    } else {
-      this.props.navigation.replace('login');
-    }
+  componentDidMount() {
+    setTimeout(async () => {
+      const user = auth().currentUser;
+      console.log(user);
+      if (user) {
+        await firestore().collection('users').doc(user.uid).get().then(userData => {
+          const data = { id: userData.id, ...userData.data() };
+          this.props.signInUser(data);
+        });
+        this.props.navigation.replace('landing');
+      } else {
+        this.props.navigation.replace('login');
+      }
+    }, 1500);
   }
 
   render() {

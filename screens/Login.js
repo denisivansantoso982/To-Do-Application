@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator, Modal, SafeAreaView } from 'react-native';
 import { connect } from 'react-redux';
 import styles from '../assets/styles/styles';
 import colour from '../models/Colour';
@@ -19,6 +19,7 @@ class Login extends Component {
 
   async doCheckUser() {
     try {
+      this.setState({loading: true});
       var phone = this.state.phoneNumber.replace(/0/, '+62');
       if (this.validation()) {
         await firestore().collection('users').where('phoneNumber', '==', phone).get().then(user => {
@@ -41,20 +42,24 @@ class Login extends Component {
   async doLogin(phone) {
     try {
       await auth().signInWithPhoneNumber(phone).then(async () => {
-        const user = auth().currentUser;
-        if (user) {
-          const token = await messaging().getToken();
-          await firestore().collection('users').doc(user.uid).update({ token: token });
-          await firestore().collection('users').doc(user.uid).get().then(snapshot => {
-            const data = {id: snapshot.id, ...snapshot.data()};
-            this.props.signInUser(data);
-          });
-          this.props.navigation.replace("landing");
-        } else {
-          Alert.alert('Information', 'Timeout');
-          this.setState({ loading: false });
-          return;
-        }
+        await auth().onAuthStateChanged(async (user) => {
+          console.log(user);
+          if (user) {
+            const token = await messaging().getToken();
+            console.log(token);
+            await firestore().collection('users').doc(user.uid).update({ token: token });
+            await firestore().collection('users').doc(user.uid).get().then(snapshot => {
+              const data = {id: snapshot.id, ...snapshot.data()};
+              this.props.signInUser(data);
+            });
+            this.props.navigation.replace("landing");
+          }
+          // else {
+          //   Alert.alert('Information', 'Timeout');
+          //   this.setState({ loading: false });
+          //   return;
+          // }
+        });
       });
     } catch (error) {
       Alert.alert(error.code, error.message);
@@ -73,13 +78,12 @@ class Login extends Component {
   }
 
   render() {
-    console.log(auth().currentUser);
     const { phoneNumber, loading } = this.state;
     return (
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <ScrollView scrollEnabled={true} style={{ flex: 1, ...styles.scrollInput }}>
 
-          <View style={styles.titleContainer}>
+          <SafeAreaView style={styles.titleContainer}>
             <View style={{flexDirection: 'row', justifyContent: 'center'}}>
               <Text style={styles.titleText}>TO</Text>
               <Text style={{...styles.titleText, color: colour.primary}}>DO</Text>
@@ -101,7 +105,7 @@ class Login extends Component {
                 <Text style={styles.loginOrRegister}>Register</Text>
               </TouchableWithoutFeedback>
             </View>
-          </View>
+          </SafeAreaView>
 
           <Modal statusBarTranslucent={true} transparent={true} animationType="fade" onRequestClose={() => this.setState({ loading: !loading })} visible={loading}>
             <View style={styles.modalDatePicker}>

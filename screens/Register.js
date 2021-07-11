@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, Modal, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard, Modal, Alert, ActivityIndicator, SafeAreaView } from 'react-native';
 import { connect } from 'react-redux';
 import styles from '../assets/styles/styles';
 import colour from '../models/Colour';
@@ -8,6 +8,7 @@ import FeatherIcon from 'react-native-vector-icons/Feather'
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import messaging from '@react-native-firebase/messaging';
+import { setDataUser } from '../config/redux/action';
 
 class Register extends Component {
   constructor () {
@@ -46,41 +47,46 @@ class Register extends Component {
 
   doRegister = async (phones) => {
     const { name, dateOfBirth, phoneNumber, address, loading } = this.state;
-    var uid = '';
-    try {
-      await auth().signInWithPhoneNumber(phones).then(async () => {
-        let token = await messaging().getToken();
-        const users = auth().currentUser;
-        if (users != null) {
-          uid = users.uid;
+    await auth().signInWithPhoneNumber(phones).then(async () => {
+      auth().onAuthStateChanged(async users => {
+        console.log(users);
+        if (users) {
+          const token = await messaging().getToken();
+          const uid = await users.uid;
+          console.log(uid);
           await firestore().collection('users').doc(uid).set({
             name: name,
-            dateOfBirth: dateOfBirth.toLocaleDateString(),
+            dateOfBirth: dateOfBirth.toDateString(),
             phoneNumber: phones,
             avatar: '',
             address: address,
             role: 'Employee',
             token: token
+          }).then(async () => {
+            await firestore().collection('users').doc(uid).get().then(user => {
+              const data = { id: user.id, ...user.data() };
+              this.props.signInUser(data);
+              this.props.navigation.replace('landing');
+            }).catch(error => {
+              Alert.alert(error.code, error.message);
+              console.log(error.code, error.message);
+            });
+          }).catch((error) => {
+            Alert.alert(error.code, error.message);
+            console.log(error.code, error.message);
           });
 
-          await firestore().collection('users').doc(uid).get().then(user => {
-            const data = { id: user.id, ...user.data() };
-            this.props.signInUser(data);
-            this.props.navigation.replace('landing');
-          })
         }
-        else {
-          Alert.alert('Information', 'Timeout');
-          this.setState({ loading: false });
-          return;
-        }
+        // else {
+        //   Alert.alert('Information', 'Timeout');
+        //   this.setState({ loading: false });
+        // }
       });
-      this.setState({loading: false});
-    } catch (error) {
+    }).catch((error) => {
       Alert.alert(error.code, error.message);
       console.log(error.code, error.message);
-      this.setState({loading: false});
-    }
+    });
+    this.setState({loading: false});
   }
 
   validation() {
@@ -95,7 +101,7 @@ class Register extends Component {
     } else if (phoneNumber === '') {
       Alert.alert("Warning", "Phone Number must be fill!");
       return false;
-    } else if (dateOfBirth === '') {
+    } else if (address === '') {
       Alert.alert("Warning", "Address must be fill!");
       return false;
     }
@@ -111,7 +117,7 @@ class Register extends Component {
           flex: 1, ...styles.scrollInput
         }}>
 
-          <View style={styles.titleContainer}>
+          <SafeAreaView style={styles.titleContainer}>
             <View style={{flexDirection: 'row', justifyContent: 'center'}}>
               <Text style={styles.titleText}>TO</Text>
               <Text style={{...styles.titleText, color: colour.primary}}>DO</Text>
@@ -148,13 +154,14 @@ class Register extends Component {
                 <Text style={styles.loginOrRegister}>Login</Text>
               </TouchableWithoutFeedback>
             </View>
-          </View>
+          </SafeAreaView>
 
           <Modal statusBarTranslucent={true} transparent={true} animationType="slide" onRequestClose={() => this.setState({ showDatePicker: !showDatePicker })} visible={showDatePicker}>
             <View style={styles.modalDatePicker}>
               <TouchableOpacity style={styles.closeModal} onPress={() => this.setState({showDatePicker: false})}>
                 <FeatherIcon name="x" color="#FFF" size={24} />
               </TouchableOpacity>
+              <Text style={styles.titleModal}>Date Of Birth</Text>
               <View style={styles.dateField}>
                 <DateTimePicker textColor="#FFF" date={dateOfBirth} onDateChange={(e) => this.setState({ dateOfBirth: e })} mode="date" androidVariant="nativeAndroid" minimumDate={new Date('1900-01-01')} maximumDate={new Date(Date.now())} />
               </View>
@@ -178,7 +185,7 @@ const mapToState = state => ({
 });
 
 const mapToAction = dispatch => ({
-  signInUser: (data) => dispatch()
+  signInUser: (data) => dispatch(setDataUser(data))
 });
 
 export default connect(mapToState, mapToAction)(Register);

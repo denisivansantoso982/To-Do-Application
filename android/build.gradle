@@ -43,7 +43,7 @@ project.ext {
         versions: [
         // Overriding Build/Android SDK Versions
         android : [
-            minSdk    : 16,
+            minSdk    : 21,
             targetSdk : 30,
             compileSdk: 30,
             buildTools: "30.0.2"

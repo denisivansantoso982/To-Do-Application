@@ -34,7 +34,8 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     marginVertical: 15,
-    justifyContent: 'center'
+    justifyContent: 'center',
+    flexGrow: 1
   },
   cardInput: {
     marginTop: 12,
@@ -206,6 +207,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     padding: 4,
     borderRadius: 4
+  },
+  openCamera: {
+    position: 'absolute',
+    top: 14,
+    left: 4,
+    padding: 10
+  },
+  titleModal: {
+    color: '#FFF',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 20,
+    position: 'absolute',
+    top: 24
   }
 });
 

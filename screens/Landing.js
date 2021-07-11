@@ -1,17 +1,56 @@
 import React, { Component } from 'react';
-import { View, Text, ScrollView, TouchableWithoutFeedback, Image, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert, Modal, ActivityIndicator } from 'react-native';
 import styles from '../assets/styles/styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import colour from '../models/Colour';
 import tempData from '../models/tempData';
 import auth from '@react-native-firebase/auth';
-import store from '../config/redux/store';
+import firestore from '@react-native-firebase/firestore';
+import { connect } from 'react-redux';
+import { setAllUsers, setListTodo } from '../config/redux/action';
 
 class Landing extends Component {
   constructor () {
     super();
     this.state = {
-      photo: ''
+      loading: true
+    }
+  }
+
+  async componentDidMount() {
+    const users = this.props.users;
+    try {
+      await firestore().collection('listTodo').where('assignmentTo', '==', users.id).onSnapshot(async (querySnapshot) => {
+        let lists = [];
+        querySnapshot.forEach(doc => {
+          lists.push({ id: doc.id, ...doc.data() });
+        });
+
+        await this.props.getListTodo(lists);
+        this.getAllUsers();
+      });
+    } catch (error) {
+      Alert.alert(error.code, error.message);
+      console.log(error.code, error.message);
+      this.setState({ loading: false });
+    }
+  }
+
+  getAllUsers = async () => {
+    try {
+      await firestore().collection('users').onSnapshot(async (querySnapshot) => {
+        let lists = [];
+        querySnapshot.forEach(doc => {
+          lists.push({ id: doc.id, ...doc.data() });
+        });
+
+        await this.props.getAllUsersData(lists);
+        this.setState({ loading: false });
+      });
+    } catch (error) {
+      Alert.alert(error.code, error.message);
+      console.log(error.code, error.message);
+      this.setState({ loading: false });
     }
   }
 
@@ -19,10 +58,12 @@ class Landing extends Component {
     this.props.navigation.navigate('task', {priority: navigate});
   }
 
-  doSignOut() {
+  async doSignOut() {
     try {
-      // auth().currentUser.delete();
-      auth().signOut().then(() => this.props.navigation.replace('login'));
+      const uid = await store.getState().users.id;
+      console.log('uid : ' + uid);
+      await firestore().collection('users').doc(uid).update({ token: 'null' });
+      await auth().signOut().then(() => this.props.navigation.replace('login'));
     } catch {
       console.log('catch');
       this.props.navigation.replace('login');
@@ -30,26 +71,28 @@ class Landing extends Component {
   }
 
   render() {
-    console.log(store.getState().users);
-    const { photo } = this.state;
-    var urgent = tempData.filter(item => item.priority == 'Urgent').length.toString();
-    var high = tempData.filter(item => item.priority == 'High').length.toString();
-    var normal = tempData.filter(item => item.priority == 'Normal').length.toString();
-    var low = tempData.filter(item => item.priority == 'Low').length.toString();
+    const { loading } = this.state;
+    var users = this.props.users;
+    var todo = this.props.todoList;
+    const { avatar } = users;
+    var urgent = todo.filter(item => item.priority == 'Urgent').length.toString();
+    var high = todo.filter(item => item.priority == 'High').length.toString();
+    var normal = todo.filter(item => item.priority == 'Normal').length.toString();
+    var low = todo.filter(item => item.priority == 'Low').length.toString();
     return (
       <View style={{flex: 1}}>
         <View style={styles.header}>
           <Text style={styles.headerText}>Landing</Text>
           <TouchableOpacity activeOpacity={1} style={styles.avatar} onPress={() => this.props.navigation.push('profile')} >
             {
-              photo === '' ? <FontAwesome5 name="user" color="#FFF" size={24} />
-              : <Image style={{ width: 30, height: 30 }} source={{ uri: photo }} resizeMode="stretch" />
+              avatar === '' ? <FontAwesome5 name="user" color="#FFF" size={24} />
+              : <Image style={{ width: 36, height: 36, borderRadius: 20 }} source={{ uri: avatar }} resizeMode="cover" />
             }
           </TouchableOpacity>
         </View>
 
         <ScrollView scrollEnabled={true} style={{...styles.scrollInput, flex: 1}}>
-          <View style={{paddingBottom: 20}}>
+          <SafeAreaView style={{paddingBottom: 20}}>
 
             <View style={styles.gridContainer}>
               <TouchableOpacity activeOpacity={0.9} style={{ ...styles.touchableContainer, backgroundColor: colour.urgent }} onPress={() => this.gotoDashboard('Urgent')}>
@@ -104,11 +147,29 @@ class Landing extends Component {
               <Text style={styles.buttonText}>LOGOUT</Text>
             </TouchableOpacity>
 
-          </View>
+          </SafeAreaView>
         </ScrollView>
+
+        {/* Modal Loading */}
+        <Modal statusBarTranslucent={true} transparent={true} animationType="fade" onRequestClose={() => this.setState({ loading: !loading })} visible={loading}>
+          <View style={styles.modalDatePicker}>
+            <ActivityIndicator animating={true} color={colour.primary} size='large' />
+          </View>
+        </Modal>
+
       </View>
     );
   }
 }
 
-export default Landing;
+const mapToState = state => ({
+  users: state.users,
+  todoList: state.todo
+});
+
+const mapToAction = dispatch => ({
+  getListTodo: (data) => dispatch(setListTodo(data)),
+  getAllUsersData: (data) => dispatch(setAllUsers(data))
+});
+
+export default connect(mapToState, mapToAction)(Landing);

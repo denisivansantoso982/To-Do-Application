@@ -1,37 +1,51 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, Modal, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, Modal, TextInput, Keyboard, TouchableWithoutFeedback, SafeAreaView, ActivityIndicator, ToastAndroid } from 'react-native';
 import styles from '../assets/styles/styles';
-import { Picker } from '@react-native-picker/picker';
 import Feather from 'react-native-vector-icons/Feather';
 import colour from '../models/Colour';
-import DateTimePicker from 'react-native-date-picker';
+import store from '../config/redux/store';
+import firestore from '@react-native-firebase/firestore';
 
 class Detail extends Component {
   constructor () {
     super();
     this.state = {
-      id: '',
-      title: '',
-      priority: 'Low',
-      status: '',
-      startDate: new Date(Date.now()),
-      endDate: new Date(Date.now()),
-      assignmentTo: [],
-      assignmentToString: '',
-      assignmentFrom: '',
-      doingDate: null,
-      doneDate: null,
-      detail: '',
-      showModalStartDate: false,
-      showModalEndDate: false,
-      showModalAssignment: false,
+      loading: false
+    }
+  }
+
+  doUpgradeStatus = async () => {
+    const { id, title, priority, status, startDate, endDate, assignmentFrom, assignmentTo, doingDate, doneDate, detail } = this.props.route.params.data;
+    this.setState({ loading: true });
+    try {
+      if (status === 'Todo') {
+        await firestore().collection('listTodo').doc(id).update({
+          status: 'Doing',
+          doingDate: new Date(Date.now()).toDateString()
+        });
+      } else if (status === 'Doing') {
+        await firestore().collection('listTodo').doc(id).update({
+          status: 'Done',
+          doneDate: new Date(Date.now()).toDateString()
+        });
+      }
+
+      ToastAndroid.show('Task upgraded!', ToastAndroid.LONG);
+      this.setState({ loading: false });
+      this.props.navigation.goBack();
+    } catch (error) {
+      Alert.alert(error.code, error.message);
+      console.log(error.code, error.message);
+      this.setState({ loading: false });
     }
   }
 
   render() {
-    const { id, title, priority, status, startDate, endDate, assignmentFrom, assignmentToString, assignmentTo, doingDate, doneDate, detail, showModalStartDate, showModalEndDate, showModalAssignment } = this.state;
+    const { loading } = this.state;
+    const { id, title, priority, status, startDate, endDate, assignmentFrom, assignmentTo, doingDate, doneDate, detail } = this.props.route.params.data;
+    const users = store.getState().allUsers;
+    const assignment = users.filter(data => data.id === assignmentFrom);
     return (
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={{ flex: 1 }}>
 
           <View style={styles.header}>
@@ -43,66 +57,57 @@ class Detail extends Component {
             </View>
           </View>
 
-          <ScrollView scrollEnabled={true} style={{ ...styles.scrollInput, flex: 1 }}>
-            <View style={{marginHorizontal: 24}}>
+          <ScrollView scrollEnabled={true} style={{...styles.scrollInput, flex: 1}}>
+            <SafeAreaView style={{flexGrow: 1, marginHorizontal: 24}}>
 
               <View style={styles.cardInput}>
-
                 {/* Title  */}
                 <Text style={styles.inputTextField}>Title</Text>
-                <TextInput style={styles.inputFieldReadOnly} placeholder="Title" keyboardType="default" onChange={(e) => this.setState({title: e.nativeEvent.text})} defaultValue={title} />
+                <Text style={styles.inputFieldReadOnly}>{title}</Text>
 
                 {/* Priority */}
                 <Text style={styles.inputTextField}>Priority</Text>
-                <TextInput style={styles.inputFieldReadOnly} placeholder="Priority" keyboardType="default" onChange={(e) => this.setState({priority: e.nativeEvent.text})} defaultValue={priority} />
+                <Text style={styles.inputFieldReadOnly}>{priority}</Text>
+
+                {/* Status */}
+                <Text style={styles.inputTextField}>Status</Text>
+                <Text style={styles.inputFieldReadOnly}>{status}</Text>
 
                 {/* Assignment From */}
                 <Text style={styles.inputTextField}>Assignment From</Text>
-                <TextInput placeholder="Assignment from" style={styles.inputFieldReadOnly} defaultValue={assignmentFrom} />
+                <Text style={styles.inputFieldReadOnly}>{assignment[0].name}</Text>
+
+                {/* Start Date */}
+                <Text style={styles.inputTextField}>Start Date</Text>
+                <Text style={styles.inputFieldReadOnly}>{startDate}</Text>
 
                 {/* End Date */}
                 <Text style={styles.inputTextField}>End Date</Text>
-                <TextInput style={styles.inputFieldReadOnly} onFocus={() => { Keyboard.dismiss(); this.setState({ showModalEndDate: true }); }} defaultValue={endDate.toDateString()} />
+                <Text style={styles.inputFieldReadOnly}>{endDate}</Text>
 
                 {/* Detail  */}
                 <Text style={styles.inputTextField}>Detail</Text>
-                <TextInput style={{...styles.inputFieldReadOnly, height: 42}} multiline={true} placeholder="Detail Task" keyboardType="default" onChange={(e) => this.setState({ detail: e.nativeEvent.text })} defaultValue={detail} />
-
+                <Text style={styles.inputFieldReadOnly}>{detail}</Text>
               </View>
 
-              {/* Button */}
-              <Text style={styles.notice}>This task will be automatically upgrade the status</Text>
-              <TouchableOpacity activeOpacity={0.9} style={{...styles.button, marginBottom: 40}}>
+            {/* Button */}
+            {
+              status === 'Done' ? <Text style={{...styles.subTitleText, color: colour.primary, marginBottom: 20}}>Status can't be upgrade because the status already Done</Text>
+              : (<TouchableOpacity activeOpacity={0.9} style={{ ...styles.button, marginBottom: 40 }} onPress={this.doUpgradeStatus}>
                 <Text style={styles.buttonText}>UPGRADE STATUS</Text>
-              </TouchableOpacity>
+              </TouchableOpacity>)
+            }
 
-            </View>
+            </SafeAreaView>
           </ScrollView>
 
-          <Modal statusBarTranslucent={true} transparent={true} animationType="slide" onRequestClose={() => this.setState({ showModalEndDate: !showModalEndDate })} visible={showModalEndDate}>
+          <Modal statusBarTranslucent={true} transparent={true} animationType="slide" onRequestClose={() => this.setState({ loading: !loading })} visible={loading}>
             <View style={styles.modalDatePicker}>
-              <TouchableOpacity style={styles.closeModal} onPress={() => this.setState({showModalEndDate: false})}>
-                <Feather name="x" color="#FFF" size={24} />
-              </TouchableOpacity>
-              <View style={styles.dateField}>
-                <DateTimePicker textColor="#FFF" date={endDate} onDateChange={(date) => this.setState({ endDate: date })} mode="date" androidVariant="nativeAndroid" minimumDate={new Date(Date.now())} />
-              </View>
-            </View>
-          </Modal>
-
-          <Modal statusBarTranslucent={true} transparent={true} animationType="slide" onRequestClose={() => this.setState({ showModalAssignment: !showModalAssignment })} visible={showModalAssignment}>
-            <View style={styles.modalDatePicker}>
-              <TouchableOpacity style={styles.closeModal} onPress={() => this.setState({showModalAssignment: false})}>
-                <Feather name="x" color="#FFF" size={24} />
-              </TouchableOpacity>
-              <View style={styles.dateField}>
-
-              </View>
+              <ActivityIndicator animating={true} color={colour.primary} size='large' />
             </View>
           </Modal>
 
         </View>
-      </TouchableWithoutFeedback>
     );
   }
 }

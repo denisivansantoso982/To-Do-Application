@@ -7,15 +7,21 @@ import Doing from '../components/Doing'
 import styles from '../assets/styles/styles';
 import Feather from 'react-native-vector-icons/Feather';
 import colour from '../models/Colour';
+import { connect } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 
 class Task extends Component {
+  constructor () {
+    super();
+  }
+
   gotoDetail = (data) => {
     this.props.navigation.navigate('detail', { data });
   }
 
   render() {
+    console.log(this.props.todoList)
     return (
       <View style={{flex: 1}}>
         <View style={styles.header}>
@@ -25,24 +31,36 @@ class Task extends Component {
             </TouchableOpacity>
             <Text style={styles.headerText}>Task</Text>
           </View>
-          <TouchableOpacity style={{paddingBottom: 4}} activeOpacity={0.9} onPress={() => this.props.navigation.navigate('addTask')}>
-            <Feather name="plus" size={28} color={colour.primary} />
-          </TouchableOpacity>
+          {
+            this.props.users.role === 'Admin' ? (<TouchableOpacity style={{paddingBottom: 4}} activeOpacity={0.9} onPress={() => this.props.navigation.navigate('addTask')}>
+              <Feather name="plus" size={28} color={colour.primary} />
+            </TouchableOpacity>) : null
+          }
         </View>
 
         <Tab.Navigator
           initialRouteName="Todo"
           tabBarOptions={{
             inactiveBackgroundColor: colour.primary,
-            activeBackgroundColor: colour.secondary, labelStyle: styles.labelStyle
+            activeBackgroundColor: colour.secondary,
+            labelStyle: styles.labelStyle
           }}>
-          <Tab.Screen name="Todo" children={() => <Todo priorityTask={this.props.route.params.priority} detailTask={(data) => this.gotoDetail(data)} />} />
-          <Tab.Screen name="Doing" children={() => <Doing priorityTask={this.props.route.params.priority} detailTask={(data) => this.gotoDetail(data)} />} />
-          <Tab.Screen name="Done" children={() => <Done priorityTask={this.props.route.params.priority} detailTask={(data) => this.gotoDetail(data)} />} />
+          <Tab.Screen name="Todo" children={() => <Todo priorityTask={this.props.route.params.priority} userRole={this.props.users.role} todoList={this.props.todoList} detailTask={(data) => this.gotoDetail(data)} />} />
+          <Tab.Screen name="Doing" children={() => <Doing priorityTask={this.props.route.params.priority} userRole={this.props.users.role} todoList={this.props.todoList} detailTask={(data) => this.gotoDetail(data)} />} />
+          <Tab.Screen name="Done" children={() => <Done priorityTask={this.props.route.params.priority} userRole={this.props.users.role} todoList={this.props.todoList} detailTask={(data) => this.gotoDetail(data)} />} />
         </Tab.Navigator>
       </View>
     );
   }
 }
 
-export default Task;
+const mapToState = state => ({
+  users: state.users,
+  todoList: state.todo
+});
+
+const mapToAction = dispatch => ({
+  getListTodo: (data) => dispatch(setListTodo(data))
+});
+
+export default connect(mapToState, mapToAction)(Task);
