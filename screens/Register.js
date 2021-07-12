@@ -23,6 +23,10 @@ class Register extends Component {
     }
   }
 
+  async componentDidMount() {
+    await messaging().deleteToken();
+  }
+
   doProcessRegister = async () => {
     const { phoneNumber, loading } = this.state;
     this.setState({loading: !loading});

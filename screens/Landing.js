@@ -3,7 +3,7 @@ import { View, Text, ScrollView, SafeAreaView, Image, TouchableOpacity, Alert, M
 import styles from '../assets/styles/styles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import colour from '../models/Colour';
-import tempData from '../models/tempData';
+import messaging from '@react-native-firebase/messaging';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { connect } from 'react-redux';
@@ -59,13 +59,13 @@ class Landing extends Component {
   }
 
   async doSignOut() {
+    this.setState({ loading: true });
     try {
-      const uid = await store.getState().users.id;
-      console.log('uid : ' + uid);
-      await firestore().collection('users').doc(uid).update({ token: 'null' });
-      await auth().signOut().then(() => this.props.navigation.replace('login'));
+      await messaging().unregisterDeviceForRemoteMessages();
+      await messaging().deleteToken();
+      await auth().signOut();
+      this.props.navigation.replace('login');
     } catch {
-      console.log('catch');
       this.props.navigation.replace('login');
     }
   }
@@ -143,7 +143,7 @@ class Landing extends Component {
             </View>
 
             {/* Button */}
-            <TouchableOpacity activeOpacity={0.9} style={{ ...styles.button, marginHorizontal: 10 }} onPress={() => this.props.navigation.replace('login')}>
+            <TouchableOpacity activeOpacity={0.9} style={{ ...styles.button, marginHorizontal: 10 }} onPress={() => this.doSignOut()}>
               <Text style={styles.buttonText}>LOGOUT</Text>
             </TouchableOpacity>
 

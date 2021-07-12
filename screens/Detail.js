@@ -10,7 +10,21 @@ class Detail extends Component {
   constructor () {
     super();
     this.state = {
-      loading: false
+      userAssignmentFrom: {},
+      loading: true
+    }
+  }
+
+  async componentDidMount() {
+    const { assignmentFrom } = this.props.route.params.data;
+    try {
+      await firestore().collection('users').doc(assignmentFrom).get().then((user) => {
+        this.setState({ userAssignmentFrom: { id: user.id, ...user.data() }, loading: false });
+      });
+    } catch (error) {
+      Alert.alert(error.code, error.message);
+      console.log(error.code, error.message);
+      this.setState({ loading: false });
     }
   }
 
@@ -29,6 +43,28 @@ class Detail extends Component {
           doneDate: new Date(Date.now()).toDateString()
         });
       }
+
+      await fetch('https://fcm.googleapis.com/fcm/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'key=AAAAdh5gGg0:APA91bHPwRpqzF-EwBnXdAZCLOXTRFPHYbh5ATlVlVI4aDirpSgdjsEtgK9qr-XYO2if982N53PXroBYcMNH8uGX9gE19ApO468gXkxNPp4rE-N0f9ro7FOyFlKXZSbtLHRd62K-X7JA'
+        },
+        body: JSON.stringify({
+          'registration_ids': [this.state.userAssignmentFrom.token],
+          'notification': {
+            'title': 'Task was updated!',
+            'body': 'Click here for more information!',
+            'vibrate': 1,
+            'sound': 1,
+            'priority': 'high',
+            'content_available': true,
+            'show_in_foreground': true
+          },
+          'data': {},
+          'direct_book_ok': true
+        })
+      });
 
       ToastAndroid.show('Task upgraded!', ToastAndroid.LONG);
       this.setState({ loading: false });
@@ -101,7 +137,7 @@ class Detail extends Component {
             </SafeAreaView>
           </ScrollView>
 
-          <Modal statusBarTranslucent={true} transparent={true} animationType="slide" onRequestClose={() => this.setState({ loading: !loading })} visible={loading}>
+          <Modal statusBarTranslucent={true} transparent={true} animationType="fade" onRequestClose={() => this.setState({ loading: !loading })} visible={loading}>
             <View style={styles.modalDatePicker}>
               <ActivityIndicator animating={true} color={colour.primary} size='large' />
             </View>

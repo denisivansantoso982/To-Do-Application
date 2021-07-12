@@ -29,7 +29,7 @@ class Task extends Component {
             <TouchableOpacity activeOpacity={0.8} onPress={() => this.props.navigation.goBack()}>
               <Feather name="chevron-left" size={36} color={colour.primary} />
             </TouchableOpacity>
-            <Text style={styles.headerText}>Task</Text>
+            <Text style={styles.headerText}>{this.props.route.params.priority} Task</Text>
           </View>
           {
             this.props.users.role === 'Admin' ? (<TouchableOpacity style={{paddingBottom: 4}} activeOpacity={0.9} onPress={() => this.props.navigation.navigate('addTask')}>

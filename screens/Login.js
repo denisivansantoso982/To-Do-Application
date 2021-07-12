@@ -17,6 +17,13 @@ class Login extends Component {
     }
   }
 
+  async componentDidMount() {
+    const user = await auth().currentUser;
+    const token = await messaging().getToken();
+    console.log(user);
+    console.log(token);
+  }
+
   async doCheckUser() {
     try {
       this.setState({loading: true});

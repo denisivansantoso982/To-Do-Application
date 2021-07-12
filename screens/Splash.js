@@ -3,10 +3,8 @@ import { View, Text } from 'react-native';
 import { connect } from 'react-redux';
 import styles from '../assets/styles/styles';
 import colour from '../models/Colour';
-import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import auth from '@react-native-firebase/auth'
 import firestore from '@react-native-firebase/firestore'
-import messaging from '@react-native-firebase/messaging';
 import { setDataUser } from '../config/redux/action';
 
 class Splash extends Component {
@@ -28,10 +26,13 @@ class Splash extends Component {
 
   render() {
     return (
-      <View style={{ ...styles.container, backgroundColor: colour.primary, flexDirection: 'column' }}>
+      <View style={{ ...styles.container, flexDirection: 'column' }}>
 
-        <FontAwesome name="list-alt" color="#FFF" size={140} />
-        <Text style={styles.titleApp}>TODO APPLICATION</Text>
+        <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+          <Text style={{...styles.titleText, fontSize: 48}}>TO</Text>
+          <Text style={{...styles.titleText, color: colour.primary, fontSize: 48}}>DO</Text>
+        </View>
+        <Text style={styles.titleApp}>APPLICATION</Text>
 
       </View>
     );

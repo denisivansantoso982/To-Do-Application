@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   titleApp: {
     fontFamily: 'Poppins-Bold',
     fontSize: 20,
-    color: '#FFF'
+    color: '#414141'
   },
   titleText: {
     fontFamily: 'Poppins-Bold',
@@ -186,8 +186,7 @@ const styles = StyleSheet.create({
     width: '95%',
     paddingVertical: 6,
     paddingHorizontal: 4,
-    marginTop: 10,
-    borderRadius: 8
+    marginTop: 10
   },
   list: {
     alignSelf: 'center',
@@ -205,8 +204,7 @@ const styles = StyleSheet.create({
     color: '#474747',
     borderColor: colour.primary,
     fontSize: 16,
-    padding: 4,
-    borderRadius: 4
+    padding: 4
   },
   openCamera: {
     position: 'absolute',

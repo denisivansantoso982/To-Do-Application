@@ -14,6 +14,7 @@ import AddTask from './screens/AddTask';
 import { Provider } from 'react-redux';
 import store from './config/redux/store';
 import auth from '@react-native-firebase/auth';
+import notifee, {EventType} from '@notifee/react-native';
 
 const Stack = createStackNavigator();
 
@@ -37,18 +38,29 @@ class App extends React.Component {
         .then(token => console.log(token))
         .catch(error => console.log(error));
 
-      messaging().onMessage(async remoteMessage => {
-        console.log(remoteMessage);
-        ToastAndroid.show('New task for you!', ToastAndroid.LONG);
+      messaging().onMessage(async message => {
+        const channel = await notifee.createChannel({ id: 'default', name: 'default channel' });
+        await notifee.displayNotification({
+          title: message.notification.title,
+          body: message.notification.body,
+          android: { channelId: channel, smallIcon: 'ic_launcher_round', pressAction: {id: 'todo', launchActivity: 'com.todo_application.MainActivity'} }
+        });
       });
 
-      messaging().onNotificationOpenedApp(async remoteMessage => {
-        console.log('onNotificationOpenedApp() ' + JSON.stringify(remoteMessage));
+      await notifee.onForegroundEvent(({ type, detail }) => {
+        switch (type) {
+          case EventType.DISMISSED:
+            null;
+            break;
+          case EventType.PRESS:
+            this;
+            break;
+        }
       });
 
-      messaging().getInitialNotification().then(async remoteMessage => {
-        if (remoteMessage) {
-          console.log('getInitialNotification() ' + JSON.stringify(remoteMessage));
+      await notifee.getInitialNotification().then(async (notification) => {
+        if (notification) {
+          console.log(notification);
         }
       });
 
@@ -59,7 +71,9 @@ class App extends React.Component {
           console.log('user has not permission');
           messaging().requestPermission().then(() => console.log('Permission granted')).catch(error => console.log(error));
         }
-      })
+      });
+
+      await messaging().registerDeviceForRemoteMessages();
     }
   }
 
