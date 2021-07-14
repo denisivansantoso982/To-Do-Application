@@ -6,7 +6,6 @@ import Feather from 'react-native-vector-icons/Feather';
 import colour from '../models/Colour';
 import DateTimePicker from 'react-native-date-picker';
 import firestore from '@react-native-firebase/firestore';
-import messaging from '@react-native-firebase/messaging';
 import { connect } from 'react-redux';
 
 class AddTask extends Component {
@@ -16,8 +15,8 @@ class AddTask extends Component {
       title: '',
       priority: 'Low',
       status: 'Todo',
-      startDate: new Date(Date.now()).toDateString(),
-      endDate: new Date(Date.now()).toDateString(),
+      startDate: new Date(Date.now()),
+      endDate: new Date(Date.now()),
       assignmentTo: 'null',
       assignmentFrom: '',
       doingDate: '',
@@ -35,15 +34,15 @@ class AddTask extends Component {
 
   doSendList = async () => {
     const { title, priority, status, startDate, endDate, assignmentTo, assignmentFrom, doingDate, doneDate, detail } = this.state;
-    this.setState({ loading: true });
     try {
       if (this.validation()) {
+        this.setState({ loading: true });
         await firestore().collection('listTodo').add({
           title: title,
           priority: priority,
           status: status,
-          startDate: startDate,
-          endDate: endDate,
+          startDate: startDate.toDateString(),
+          endDate: endDate.toDateString(),
           assignmentTo: assignmentTo,
           assignmentFrom: assignmentFrom,
           doingDate: doingDate,
@@ -172,11 +171,11 @@ class AddTask extends Component {
 
                 {/* Start Date */}
                 <Text style={styles.inputTextField}>Start Date</Text>
-                <TextInput style={styles.inputField} onFocus={() => { Keyboard.dismiss(); this.setState({ showModalStartDate: true }); }} defaultValue={startDate} />
+                <TextInput style={styles.inputField} onFocus={() => { Keyboard.dismiss(); this.setState({ showModalStartDate: true }); }} defaultValue={startDate.toDateString()} />
 
                 {/* End Date */}
                 <Text style={styles.inputTextField}>End Date</Text>
-                <TextInput style={styles.inputField} onFocus={() => { Keyboard.dismiss(); this.setState({ showModalEndDate: true }); }} defaultValue={endDate} />
+                <TextInput style={styles.inputField} onFocus={() => { Keyboard.dismiss(); this.setState({ showModalEndDate: true }); }} defaultValue={endDate.toDateString()} />
 
                 {/* Detail  */}
                 <Text style={styles.inputTextField}>Detail</Text>
@@ -201,7 +200,7 @@ class AddTask extends Component {
               </TouchableOpacity>
               <Text style={styles.titleModal}>End Date</Text>
               <View style={styles.dateField}>
-                <DateTimePicker textColor="#FFF" date={new Date(Date.parse(endDate))} onDateChange={(date) => this.setState({ endDate: date.toDateString() })} mode="date" androidVariant="nativeAndroid" minimumDate={new Date(Date.now())} />
+                <DateTimePicker textColor="#FFF" date={endDate} onDateChange={(date) => this.setState({ endDate: date })} mode="date" androidVariant="nativeAndroid" minimumDate={new Date(Date.now())} />
               </View>
             </View>
           </Modal>
@@ -214,7 +213,7 @@ class AddTask extends Component {
               </TouchableOpacity>
               <Text style={styles.titleModal}>Start Date</Text>
               <View style={styles.dateField}>
-                <DateTimePicker textColor="#FFF" date={new Date(Date.parse(startDate))} onDateChange={(date) => this.setState({ startDate: date.toDateString() })} mode="date" androidVariant="nativeAndroid"  minimumDate={new Date(Date.now())} />
+                <DateTimePicker textColor="#FFF" date={startDate} onDateChange={(date) => this.setState({ startDate: date })} mode="date" androidVariant="nativeAndroid"  minimumDate={new Date(Date.now())} />
               </View>
             </View>
           </Modal>

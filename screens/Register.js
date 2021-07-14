@@ -51,9 +51,10 @@ class Register extends Component {
 
   doRegister = async (phones) => {
     const { name, dateOfBirth, phoneNumber, address, loading } = this.state;
+    auth().settings.appVerificationDisabledForTesting = true;
     await auth().signInWithPhoneNumber(phones).then(async () => {
       await auth().onAuthStateChanged(async users => {
-        console.log(await users);
+        console.log(users);
         if (users) {
           const token = await messaging().getToken();
           const uid = await users.uid;
@@ -65,7 +66,7 @@ class Register extends Component {
             phoneNumber: phones,
             avatar: '',
             address: address,
-            role: 'Employee',
+            role: 'Admin',
             token: token
           }).then(async () => {
             await firestore().collection('users').doc(uid).get().then(user => {
@@ -145,7 +146,7 @@ class Register extends Component {
             </View>
 
             {/* Button */}
-            <Text style={styles.notice}>Auto Login To This App and Registered as Employee!</Text>
+            <Text style={styles.notice}>Auto Login To This App!</Text>
             <TouchableOpacity activeOpacity={0.9} style={styles.button} onPress={this.doProcessRegister}>
               <Text style={styles.buttonText}>REGISTER</Text>
             </TouchableOpacity>
