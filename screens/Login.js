@@ -17,13 +17,6 @@ class Login extends Component {
     }
   }
 
-  async componentDidMount() {
-    const user = await auth().currentUser;
-    const token = await messaging().getToken();
-    console.log(user);
-    console.log(token);
-  }
-
   async doCheckUser() {
     try {
       this.setState({loading: true});
@@ -61,11 +54,6 @@ class Login extends Component {
             });
             this.props.navigation.replace("landing");
           }
-          // else {
-          //   Alert.alert('Information', 'Timeout');
-          //   this.setState({ loading: false });
-          //   return;
-          // }
         });
       });
     } catch (error) {

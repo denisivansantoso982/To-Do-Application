@@ -24,12 +24,12 @@ class Register extends Component {
   }
 
   async componentDidMount() {
-    await messaging().deleteToken();
+    console.log(await messaging().getToken())
   }
 
   doProcessRegister = async () => {
     const { phoneNumber, loading } = this.state;
-    this.setState({loading: !loading});
+    this.setState({loading: true});
     var phones = phoneNumber.replace(/0/, '+62');
     try {
       if (this.validation()) {
@@ -43,20 +43,21 @@ class Register extends Component {
         });
       }
     } catch (error) {
-      this.setState({loading: !false});
       Alert.alert(error.code, error.message);
       console.log(error.code, error.message);
+      this.setState({loading: false});
     }
   }
 
   doRegister = async (phones) => {
     const { name, dateOfBirth, phoneNumber, address, loading } = this.state;
     await auth().signInWithPhoneNumber(phones).then(async () => {
-      auth().onAuthStateChanged(async users => {
-        console.log(users);
+      await auth().onAuthStateChanged(async users => {
+        console.log(await users);
         if (users) {
           const token = await messaging().getToken();
           const uid = await users.uid;
+          console.log(token + ' - ' + uid)
           console.log(uid);
           await firestore().collection('users').doc(uid).set({
             name: name,
@@ -74,23 +75,20 @@ class Register extends Component {
             }).catch(error => {
               Alert.alert(error.code, error.message);
               console.log(error.code, error.message);
+              this.setState({loading: false});
             });
           }).catch((error) => {
             Alert.alert(error.code, error.message);
             console.log(error.code, error.message);
+            this.setState({loading: false});
           });
-
         }
-        // else {
-        //   Alert.alert('Information', 'Timeout');
-        //   this.setState({ loading: false });
-        // }
       });
     }).catch((error) => {
       Alert.alert(error.code, error.message);
       console.log(error.code, error.message);
+      this.setState({loading: false});
     });
-    this.setState({loading: false});
   }
 
   validation() {

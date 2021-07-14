@@ -1185,7 +1185,7 @@
 
 "@react-native-firebase/app@^12.1.0":
   version "12.1.0"
-  resolved "https://registry.npmjs.org/@react-native-firebase/app/-/app-12.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/app/-/app-12.1.0.tgz#fa2c989af2bd876ed83f792c0152067184a7db27"
   integrity sha512-goulw5PFGo2NIqqZXpv7kyv0XPKWQT2G/2ZXEFMdgDnxZGRyiAH82gR/v9rAMCww1lFVTeMZdphU5WFN/qdptg==
   dependencies:
     opencollective-postinstall "^2.0.1"
@@ -1193,22 +1193,22 @@
 
 "@react-native-firebase/auth@^12.1.0":
   version "12.1.0"
-  resolved "https://registry.npmjs.org/@react-native-firebase/auth/-/auth-12.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/auth/-/auth-12.1.0.tgz#1897714d7650f49946611f932e3c6119482e49e9"
   integrity sha512-9/peQaPYl5M2q4q/06Sih3z+BL9wOlmXgPex7jqbF99DN6IUigEq6eOt0sR3/g0ftS/IRDG7BfbIN5MtuY1vbg==
 
 "@react-native-firebase/firestore@^12.1.0":
   version "12.1.0"
-  resolved "https://registry.npmjs.org/@react-native-firebase/firestore/-/firestore-12.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/firestore/-/firestore-12.1.0.tgz#079d1c01ec72b2f3602eacdaace4da5b285a6c26"
   integrity sha512-SyiqRAQRS0C0Gh5gOZBp9UM0FFOF555uqJK+3NzO2GHGYM7ofLONyhnhZEJGWk9iDog/TnRjlAHC3C1zsDe+1w==
 
 "@react-native-firebase/messaging@^12.1.0":
   version "12.1.0"
-  resolved "https://registry.npmjs.org/@react-native-firebase/messaging/-/messaging-12.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/messaging/-/messaging-12.1.0.tgz#eb74e37edabd0c392e28f6df622adafeb1617e23"
   integrity sha512-8kL2Gs5N6o4aJdeoNrrYnmFvMms+H+mjj3ttlQLWobN7hy7fLCD9sbahJR9W3jzSoOb+XTaxk6Xf3PzVBBB7Mw==
 
 "@react-native-firebase/storage@^12.1.0":
   version "12.1.0"
-  resolved "https://registry.npmjs.org/@react-native-firebase/storage/-/storage-12.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/storage/-/storage-12.1.0.tgz#efb70ad2d5dd062659aa5c830d976e262b14f4fb"
   integrity sha512-xp5LGqPH6KcD0N9yc0Ye454ppxO/+5idL0AqXrmdA/B+HPHt49JRamkXSW8PrFXG3DVm3LcJEKHMhY6cEtpd5w==
 
 "@react-native-picker/picker@^1.16.3":

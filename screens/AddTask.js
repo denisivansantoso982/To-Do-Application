@@ -68,7 +68,7 @@ class AddTask extends Component {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'key=AAAAdh5gGg0:APA91bHPwRpqzF-EwBnXdAZCLOXTRFPHYbh5ATlVlVI4aDirpSgdjsEtgK9qr-XYO2if982N53PXroBYcMNH8uGX9gE19ApO468gXkxNPp4rE-N0f9ro7FOyFlKXZSbtLHRd62K-X7JA'
+          'Authorization': 'key=AAAAKsIXSHQ:APA91bGzIUGdQFRYJB141NSejwDptWfR9_WAgmL1ar8rl9ryt8Nsq1d_E3413ohCUcELoBXJ1qTe_SR3s5e-jY0XryY0VFfnH7ecOu4SpwP-pBwIlikSDPTMbRmaYBFhqkfpLcdns1fa'
         },
         body: JSON.stringify({
           'registration_ids': [token],
