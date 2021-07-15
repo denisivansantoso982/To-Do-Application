@@ -2,7 +2,7 @@
  * @format
  */
 
-import {AppRegistry} from 'react-native';
+import {AppRegistry, ToastAndroid} from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
 import messaging from '@react-native-firebase/messaging';
@@ -13,12 +13,24 @@ const users = auth().currentUser;
 
 if (users){
   messaging().setBackgroundMessageHandler(async message => {
-    const channel = await notifee.createChannel({ id: 'default', name: 'default channel' });
-    await notifee.displayNotification({
-      title: message.notification.title,
-      body: message.notification.body,
-      android: { channelId: channel, smallIcon: 'ic_launcher_round', pressAction: {id: 'todo', launchActivity: 'com.todo_application.MainActivity'} }
-    });
+    try {
+      const notification = message.notification;
+      ToastAndroid.show('New Task!', ToastAndroid.LONG);
+      const channel = await notifee.createChannel({ id: 'default', name: 'default channel' });
+      await notifee.displayNotification({
+        title: notification.title,
+        body: notification.body,
+        android: {
+          channelId: channel,
+          sound: notification.android.sound,
+          smallIcon: 'ic_launcher_round',
+          pressAction: { id: 'todo', launchActivity: 'com.todo_application.MainActivity' }
+        }
+      });
+    } catch (error) {
+      console.log(error.code, error.message);
+      ToastAndroid.show(error.message, ToastAndroid.LONG);
+    }
   });
 }
 

@@ -62,7 +62,7 @@ class Register extends Component {
           console.log(uid);
           await firestore().collection('users').doc(uid).set({
             name: name,
-            dateOfBirth: dateOfBirth.toDateString(),
+            dateOfBirth: dateOfBirth,
             phoneNumber: phones,
             avatar: '',
             address: address,

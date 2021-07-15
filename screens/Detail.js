@@ -35,12 +35,12 @@ class Detail extends Component {
       if (status === 'Todo') {
         await firestore().collection('listTodo').doc(id).update({
           status: 'Doing',
-          doingDate: new Date(Date.now()).toDateString()
+          doingDate: new Date(Date.now())
         });
       } else if (status === 'Doing') {
         await firestore().collection('listTodo').doc(id).update({
           status: 'Done',
-          doneDate: new Date(Date.now()).toDateString()
+          doneDate: new Date(Date.now())
         });
       }
 
@@ -53,13 +53,15 @@ class Detail extends Component {
         body: JSON.stringify({
           'registration_ids': [this.state.userAssignmentFrom.token],
           'notification': {
-            'title': 'Task was updated!',
+            'title': title + ' updated!',
             'body': 'Click here for more information!',
-            'vibrate': 1,
-            'sound': 1,
-            'priority': 'high',
-            'content_available': true,
-            'show_in_foreground': true
+            'android': {
+              'vibrate': 1,
+              'sound': 'default',
+              'priority': 'high',
+              'content_available': true,
+              'show_in_foreground': true
+            }
           },
           'data': {},
           'direct_book_ok': true
@@ -79,6 +81,8 @@ class Detail extends Component {
   render() {
     const { loading } = this.state;
     const { id, title, priority, status, startDate, endDate, assignmentFrom, assignmentTo, doingDate, doneDate, detail } = this.props.route.params.data;
+    const start = new Date(startDate.seconds * 1000);
+    const end = new Date(endDate.seconds * 1000);
     const users = store.getState().allUsers;
     const assignment = users.filter(data => data.id === assignmentFrom);
     return (
@@ -115,11 +119,11 @@ class Detail extends Component {
 
                 {/* Start Date */}
                 <Text style={styles.inputTextField}>Start Date</Text>
-                <Text style={styles.inputFieldReadOnly}>{startDate}</Text>
+                <Text style={styles.inputFieldReadOnly}>{start.toDateString()}</Text>
 
                 {/* End Date */}
                 <Text style={styles.inputTextField}>End Date</Text>
-                <Text style={styles.inputFieldReadOnly}>{endDate}</Text>
+                <Text style={styles.inputFieldReadOnly}>{end.toDateString()}</Text>
 
                 {/* Detail  */}
                 <Text style={styles.inputTextField}>Detail</Text>

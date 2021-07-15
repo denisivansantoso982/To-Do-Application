@@ -28,23 +28,34 @@ class App extends React.Component {
   }
 
   async componentDidMount() {
+    await messaging().registerDeviceForRemoteMessages();
     const users = auth().currentUser;
 
     if (users) {
-      const token = await messaging().getToken();
-      console.log(token);
-      await messaging().requestPermission()
-        .then((token) => messaging().getToken())
-        .then(token => console.log(token))
-        .catch(error => console.log(error));
+      await messaging().requestPermission();
+        // .then((token) => messaging().getToken())
+        // .then(token => console.log(token))
+        // .catch(error => console.log(error));
 
-      messaging().onMessage(async message => {
-        const channel = await notifee.createChannel({ id: 'default', name: 'default channel' });
-        await notifee.displayNotification({
-          title: message.notification.title,
-          body: message.notification.body,
-          android: { channelId: channel, smallIcon: 'ic_launcher_round', pressAction: {id: 'todo', launchActivity: 'com.todo_application.MainActivity'} }
-        });
+      await messaging().onMessage(async message => {
+        try {
+          const notification = message.notification;
+          ToastAndroid.show('New Task!', ToastAndroid.LONG);
+          const channel = await notifee.createChannel({ id: 'default', name: 'default channel' });
+          await notifee.displayNotification({
+            title: notification.title,
+            body: notification.body,
+            android: {
+              channelId: channel,
+              sound: notification.android.sound,
+              smallIcon: 'ic_launcher_round',
+              pressAction: { id: 'todo', launchActivity: 'com.todo_application.MainActivity' }
+            }
+          });
+        } catch (error) {
+          ToastAndroid.show(error.message, ToastAndroid.LONG);
+          console.log(error.code, error.message);
+        }
       });
 
       await notifee.onForegroundEvent(({ type, detail }) => {
@@ -72,8 +83,6 @@ class App extends React.Component {
           messaging().requestPermission().then(() => console.log('Permission granted')).catch(error => console.log(error));
         }
       });
-
-      await messaging().registerDeviceForRemoteMessages();
     }
   }
 

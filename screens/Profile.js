@@ -17,7 +17,7 @@ class Profile extends Component {
     this.state = {
       id: this.props.users.id,
       name: this.props.users.name,
-      dateOfBirth: this.props.users.dateOfBirth,
+      dateOfBirth: new Date(this.props.users.dateOfBirth.seconds*1000),
       phoneNumber: this.props.users.phoneNumber,
       address: this.props.users.address,
       role: this.props.users.role,
@@ -26,6 +26,10 @@ class Profile extends Component {
       loading: false,
       loadingUpload: false
     }
+  }
+
+  componentDidMount() {
+    console.log(this.state.dateOfBirth);
   }
 
   doOpenCamera = () => {
@@ -96,7 +100,6 @@ class Profile extends Component {
           const file = response.assets.map(photo => photo.uri);
           this.setState({ loadingUpload: true });
           this.doUploadAvatar(file[0]);
-
         }
       });
     } catch (error) {
@@ -106,7 +109,7 @@ class Profile extends Component {
 
   doUploadAvatar = async (file) => {
     try {
-      await storage().ref('Avatar/' + this.state.id).putFile(file).on('state_changed', () => {
+      await storage().ref('Avatar/').child(this.state.id).putFile(file).on('state_changed', () => {
         this.getImageFromStorage();
       });
     } catch (error) {
@@ -118,7 +121,7 @@ class Profile extends Component {
 
   getImageFromStorage = async () => {
     try {
-      var url = await storage().ref('Avatar/' + this.state.id).getDownloadURL();
+      var url = await storage().ref('Avatar/').child(this.state.id).getDownloadURL();
       await firestore().collection('users').doc(this.state.id).update({ avatar: url });
       await firestore().collection('users').doc(this.state.id).get().then(user => {
         this.props.updateUserProfile({ id: user.id, ...user.data() });
@@ -209,11 +212,11 @@ class Profile extends Component {
 
                 {/* dateOfBirth */}
                 <Text style={styles.inputTextField}>Date of Birth</Text>
-                <TextInput style={styles.inputField} onFocus={() => { Keyboard.dismiss(); this.setState({ showDatePicker: true }); }} defaultValue={dateOfBirth} />
+                <TextInput style={styles.inputField} onFocus={() => { Keyboard.dismiss(); this.setState({ showDatePicker: true }); }} defaultValue={dateOfBirth.toDateString()} />
 
                 {/* phoneNumber */}
                 <Text style={styles.inputTextField}>Phone Number</Text>
-                <TextInput maxLength={15} style={styles.inputField} editable={false} placeholder="08xxxxxxxxxx" keyboardType="phone-pad" onChange={(e) => this.setState({phoneNumber: e.nativeEvent.text})} defaultValue={phoneNumber} />
+                <TextInput maxLength={15} style={{...styles.inputField, color: '#646464'}} editable={false} placeholder="08xxxxxxxxxx" keyboardType="phone-pad" onChange={(e) => this.setState({phoneNumber: e.nativeEvent.text})} defaultValue={phoneNumber} />
 
                 {/* Address */}
                 <Text style={styles.inputTextField}>Address</Text>
@@ -238,7 +241,7 @@ class Profile extends Component {
               </TouchableOpacity>
               <Text style={styles.titleModal}>Date Of Birth</Text>
               <View style={styles.dateField}>
-                <DateTimePicker textColor="#FFF" date={new Date(Date.parse(dateOfBirth))} onDateChange={(date) => this.setState({ dateOfBirth: date.toDateString() })} mode="date" androidVariant="nativeAndroid" minimumDate={new Date('1900-01-01')} maximumDate={new Date(Date.now())} />
+                <DateTimePicker textColor="#FFF" date={dateOfBirth} onDateChange={(date) => this.setState({ dateOfBirth: date })} mode="date" androidVariant="nativeAndroid" minimumDate={new Date('1900-01-01')} maximumDate={new Date(Date.now())} />
               </View>
             </View>
           </Modal>

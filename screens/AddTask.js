@@ -41,8 +41,8 @@ class AddTask extends Component {
           title: title,
           priority: priority,
           status: status,
-          startDate: startDate.toDateString(),
-          endDate: endDate.toDateString(),
+          startDate: startDate,
+          endDate: endDate,
           assignmentTo: assignmentTo,
           assignmentFrom: assignmentFrom,
           doingDate: doingDate,
@@ -73,12 +73,14 @@ class AddTask extends Component {
           'registration_ids': [token],
           'notification': {
             'title': 'New Task for you!',
-            'body': 'See here for more detail!',
-            'vibrate': 1,
-            'sound': 1,
-            'priority': 'high',
-            'content_available': true,
-            'show_in_foreground': true
+            'body': 'Your new task ' + this.state.title + '!',
+            'android': {
+              'vibrate': 1,
+              'sound': 'default',
+              'priority': 'high',
+              'content_available': true,
+              'show_in_foreground': true
+            }
           },
           'data': {},
           'direct_book_ok': true

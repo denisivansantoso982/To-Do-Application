@@ -20,11 +20,12 @@ class Done extends Component {
   }
 
   renderList = (item) => {
+    const end = new Date(item.item.dataItem.endDate.seconds*1000);
     return (
       <TouchableOpacity onPress={() => this.props.detailTask(item.item.dataItem, {item: item.item.dataItem})} activeOpacity={1}>
         <ListComponent style={styles.list}>
           <Text style={{...styles.contentList, alignSelf: 'flex-start', fontSize: 16, flex: 3}}>{item.item.dataItem.title}</Text>
-          <Text style={{ ...styles.contentList, alignSelf: 'flex-start', fontSize: 12, flex: 3, marginTop: 24 }}>{item.item.dataItem.endDate}</Text>
+          <Text style={{ ...styles.contentList, alignSelf: 'flex-start', fontSize: 12, flex: 3, marginTop: 24 }}>{end.toDateString()}</Text>
           {
             this.props.userRole === 'Admin' ? (<TouchableOpacity activeOpacity={0.8} style={{flex: 1, alignItems: 'flex-end'}} onPress={() => this.doDeleteTask(item.item.dataItem.id)}>
               <Feather name="x" color={colour.primary} size={20} />
