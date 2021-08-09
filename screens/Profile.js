@@ -113,7 +113,10 @@ class Profile extends Component {
         this.getImageFromStorage();
       });
     } catch (error) {
-      Alert.alert(error.code, error.message);
+      if (error.code !== "storage/object-not-found") {
+        Alert.alert(error.code, error.message);
+      }
+
       console.log(error.code, error.message);
       this.setState({ loadingUpload: false });
     }
@@ -128,7 +131,10 @@ class Profile extends Component {
         this.setState({ loadingUpload: false });
       });
     } catch (error) {
-      Alert.alert(error.code, error.message);
+      if (error.code !== "storage/object-not-found") {
+        Alert.alert(error.code, error.message);
+      }
+
       console.log(error.code, error.message);
       this.setState({ loadingUpload: false });
     }
